@@ -89,11 +89,14 @@ The initial wordmark is an editable text mark. To use a replacement logo, upload
 
 ## Deployment (Vercel + managed PostgreSQL)
 
+The repository includes GitHub Actions workflows. Every push/PR installs exactly the locked npm dependencies with `npm ci`, runs the test/typecheck/audit checks, and performs a production build. Pushes to `arena/**` can deploy a Vercel Preview; pushes to `main` run the production deploy workflow. The deploy workflow safely skips deployment until Vercel credentials are configured.
+
 1. Provision PostgreSQL, Supabase Storage, and Upstash Redis. Create the storage bucket and verify public read access for uploaded product photographs.
-2. Add all production variables from `.env.example` in the Vercel project settings. Use separate development/production secrets, a pooled runtime database URL, and a direct migration URL. Restrict the database and storage service-role credentials to server-side use.
-3. Build with `npm run build` (the build generates Prisma Client and then runs Next.js production compilation). Apply migrations as a deployment step with `npm run db:deploy`, then run `npm run db:seed` once and create the administrator with `npm run admin:create` from a secure operator environment.
-4. Set `NEXT_PUBLIC_SITE_URL` to the HTTPS production domain. Test the admin login, catalogue publication, image upload, public enquiry save, CSV export and phone/WhatsApp links before launch.
-5. Keep the database and storage in regions appropriate for the business. Review managed-provider retention, access policies, backup schedules and contractual privacy obligations before collecting real customer data.
+2. Create a Vercel project connected to this GitHub repository. Add the production environment variables from `.env.example` in Vercel. Use a pooled runtime URL and direct migration URL; keep storage service-role credentials server-only.
+3. In GitHub repository **Settings → Secrets and variables → Actions**, add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`. These values let the included workflow create branch preview deployments and deploy `main` to production. Set the Vercel project environment variables, including `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `NEXT_PUBLIC_SITE_URL`.
+4. Once the Vercel secrets are added, pushes to `arena/**` create preview deployments. Merge the session branch through a pull request to `main` to trigger the production deployment. The production job generates Prisma Client, applies checked-in migrations, and safely seeds the initial draft catalogue/content before building and publishing.
+5. Create the first administrator once from a secure operator environment after the production database is configured. Use `ADMIN_EMAIL` and `ADMIN_PASSWORD` (14+ characters) with `npm run admin:create`; do not store the owner password in the repository. Then visit `/admin/login` on the Vercel domain.
+6. Set `NEXT_PUBLIC_SITE_URL` to the HTTPS production domain. Test admin login, catalogue publication, image upload, public enquiry save, CSV export and phone/WhatsApp links before launch. Review managed-provider retention, access policies, backups and privacy obligations before collecting customer data.
 
 ### Backup, restore and secret rotation
 
