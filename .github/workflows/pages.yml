@@ -1,0 +1,92 @@
+name: Check and publish static website
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check script.js
+      - name: Check HTML references
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          class CheckHTML(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = set()
+                  self.fragments = []
+                  self.files = []
+                  self.duplicates = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  element_id = attrs.get('id')
+                  if element_id:
+                      if element_id in self.ids:
+                          self.duplicates.append(element_id)
+                      self.ids.add(element_id)
+                  for key in ('href', 'src'):
+                      value = attrs.get(key, '')
+                      if not value or value.startswith(('https://', 'http://', 'mailto:', 'tel:', 'data:', 'javascript:')):
+                          continue
+                      if value.startswith('#'):
+                          self.fragments.append(value[1:])
+                      else:
+                          path = urlparse(value).path
+                          if path:
+                              self.files.append(path)
+
+          parser = CheckHTML()
+          parser.feed(Path('index.html').read_text(encoding='utf-8'))
+          missing_fragments = sorted(set(parser.fragments) - parser.ids)
+          missing_files = [path for path in parser.files if not Path(path).is_file()]
+          assert not parser.duplicates, f'duplicate IDs: {parser.duplicates}'
+          assert not missing_fragments, f'missing page anchors: {missing_fragments}'
+          assert not missing_files, f'missing local files: {missing_files}'
+          print('HTML references and anchors are valid.')
+          PY
+      - name: Build Pages artifact
+        run: |
+          mkdir -p site
+          cp index.html styles.css script.js site/
+          cp -R assets site/assets
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
