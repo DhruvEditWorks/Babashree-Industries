@@ -1,3 +1,3 @@
 import type { Metadata } from 'next';import './globals.css';import {getSite} from '@/lib/site';
 export async function generateMetadata():Promise<Metadata>{const s=await getSite();return {metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000'),title:{default:`${s.companyName} | Metal Hooks & Industrial Fasteners`,template:`%s | ${s.companyName}`},description:s.description,openGraph:{type:'website',title:s.companyName,description:s.description,locale:'en_IN',siteName:s.companyName},robots:{index:true,follow:true}};}
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" data-scroll-behavior="smooth"><body>{children}</body></html>}
