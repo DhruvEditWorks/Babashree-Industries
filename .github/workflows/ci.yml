@@ -12,7 +12,7 @@ permissions:
 jobs:
   test-build:
     name: Install, test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # Build-only placeholders. They are never used for a database connection.
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/babashree_ci
@@ -21,9 +21,9 @@ jobs:
       NEXT_PUBLIC_SITE_URL: https://example.invalid
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -36,4 +36,11 @@ jobs:
       - name: Unit tests
         run: npm test
       - name: Production build
-        run: npm run build
+        run: npm run build 2>&1 | tee /tmp/babashree-build.log
+      - name: Report build error details
+        if: failure()
+        run: |
+          if [ -f /tmp/babashree-build.log ]; then
+            details="$(tail -n 16 /tmp/babashree-build.log | tr '\n' ' ' | cut -c1-3500)"
+            echo "::error title=Production build failed::$details"
+          fi
