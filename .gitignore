@@ -1,9 +1,2 @@
-node_modules/
-.next/
-*.tsbuildinfo
-.env
-.env.*
-!.env.example
-coverage/
 .DS_Store
-.vercel/
+*.log

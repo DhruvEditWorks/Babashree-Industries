@@ -1,1 +1,0 @@
-import {requireAdmin} from '@/lib/auth';import {AdminShell} from '@/components/admin-shell';import {AdminMedia} from '@/components/admin-media';export const dynamic='force-dynamic';export default async function Media(){const a=await requireAdmin();return <AdminShell email={a.email}><AdminMedia/></AdminShell>}

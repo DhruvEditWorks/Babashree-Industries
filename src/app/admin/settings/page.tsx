@@ -1,1 +1,0 @@
-import {requireAdmin} from '@/lib/auth';import {AdminShell} from '@/components/admin-shell';import {AdminSettings} from '@/components/admin-settings';export const dynamic='force-dynamic';export default async function Settings(){const a=await requireAdmin();return <AdminShell email={a.email}><AdminSettings/></AdminShell>}

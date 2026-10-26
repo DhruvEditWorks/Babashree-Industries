@@ -1,1 +1,0 @@
-import {requireAdmin} from '@/lib/auth';import {AdminShell} from '@/components/admin-shell';import {AdminProducts} from '@/components/admin-products';export const dynamic='force-dynamic';export default async function ProductsAdmin(){const a=await requireAdmin();return <AdminShell email={a.email}><AdminProducts/></AdminShell>}

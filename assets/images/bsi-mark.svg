@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Baba Shree Industries mark</title>
+  <path fill="#152b3b" d="M5 5h38v38H5z"/>
+  <path fill="none" stroke="#d99365" stroke-width="2" d="M14 15h20M14 23h20M14 31h20"/>
+  <text x="24" y="39" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="7" font-weight="700" letter-spacing="1">BSI</text>
+</svg>
