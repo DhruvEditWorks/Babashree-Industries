@@ -1,0 +1,1 @@
+import {requireAdmin} from '@/lib/auth';import {AdminShell} from '@/components/admin-shell';import {AdminEnquiries} from '@/components/admin-enquiries';export const dynamic='force-dynamic';export default async function Enquiries(){const a=await requireAdmin();return <AdminShell email={a.email}><AdminEnquiries/></AdminShell>}

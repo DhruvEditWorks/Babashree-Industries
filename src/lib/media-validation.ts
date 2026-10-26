@@ -1,0 +1,2 @@
+export const MAX_MEDIA_BYTES=8*1024*1024;
+export function detectImageMime(bytes:Buffer):'image/jpeg'|'image/png'|'image/webp'|null{if(bytes.subarray(0,3).equals(Buffer.from([0xff,0xd8,0xff])))return 'image/jpeg';if(bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))return 'image/png';if(bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP')return 'image/webp';return null;}
